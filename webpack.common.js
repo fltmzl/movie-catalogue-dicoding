@@ -4,6 +4,10 @@ const path = require("path");
 
 const WorkboxWebapckPlugin = require("workbox-webpack-plugin");
 
+require("dotenv").config({
+  path: path.resolve(".env"),
+});
+
 module.exports = {
   entry: {
     app: path.resolve(__dirname, "src/scripts/index.js"),

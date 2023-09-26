@@ -2,8 +2,10 @@
   "env": {
     "browser": true,
     "es2021": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
+  "plugins": ["jest"],
   "extends": "airbnb-base",
   "overrides": [],
   "parserOptions": {

@@ -1,39 +1,62 @@
-import "regenerator-runtime";
-import CacheHelper from "./utils/cache-helper";
+import { precacheAndRoute } from "workbox-precaching";
+import { registerRoute, Route } from "workbox-routing";
+import { StaleWhileRevalidate } from "workbox-strategies";
 
-// Daftar asset yang akan di caching
-const assetsToCache = [
-  "./",
-  "./icons/icon-72x72.png",
-  "./icons/icon-96x96.png",
-  "./icons/icon-128x128.png",
-  "./icons/icon-144x144.png",
-  "./icons/icon-152x152.png",
-  "./icons/icon-192x192.png",
-  "./icons/icon-384x384.png",
-  "./icons/icon-512x512.png",
-  "./index.html",
-  "./favicon.ico",
-  "./app.bundle.js",
-  "./app.webmanifest",
-  "./sw.bundle.js",
-];
+// Do precaching
+precacheAndRoute(self.__WB_MANIFEST);
 
-self.addEventListener("install", (event) => {
-  console.log("Installing Service Worker ...");
+const themoviedbApi = new Route(
+  ({ url }) => url.href.startsWith("https://api.themoviedb.org/3/"),
+  new StaleWhileRevalidate({
+    cacheName: "themoviedb-api",
+  }),
+);
 
-  // TODO: Caching App Shell Resource
-  event.waitUntil(CacheHelper.cachingAppShell([...assetsToCache]));
+const themoviedbImageApi = new Route(
+  ({ url }) => url.href.startsWith("https://image.tmdb.org/t/p/w500/"),
+  new StaleWhileRevalidate({
+    cacheName: "themoviedb-image-api",
+  }),
+);
+
+registerRoute(themoviedbApi);
+registerRoute(themoviedbImageApi);
+
+self.addEventListener("install", () => {
+  console.log("Service Worker: Installed");
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-  console.log("Activating Service Worker ...");
+self.addEventListener("push", (event) => {
+  console.log("Service Worker: Pushed");
 
-  // TODO: Delete old caches
-  event.waitUntil(CacheHelper.deleteOldCache());
+  const dataJson = event.data.json();
+
+  const notificationData = {
+    title: dataJson.title,
+    options: {
+      body: dataJson.options.body,
+      icon: dataJson.options.icon,
+      image: dataJson.options.image,
+    },
+  };
+
+  const showNotification = self.registration.showNotification(
+    notificationData.title,
+    notificationData.options,
+  );
+
+  event.waitUntil(showNotification);
 });
 
-self.addEventListener("fetch", (event) => {
-  // TODO: Add/get fetch request to/from caches
-  event.respondWith(CacheHelper.revalidateCache(event.request));
+self.addEventListener("notificationclick", (event) => {
+  const clickedNotification = event.notification;
+  clickedNotification.close();
+
+  const chainPromise = async () => {
+    console.log("Notification has been clicked");
+    await self.clients.openWindow("https://www.dicoding.com/");
+  };
+
+  event.waitUntil(chainPromise());
 });

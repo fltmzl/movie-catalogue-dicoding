@@ -1,11 +1,14 @@
+import FavoriteMovieIdb from "../../data/favorite-movie-idb";
 import TheMovieDbSource from "../../data/themoviedb-source";
 import UrlParser from "../../routes/url-parser";
+import LikeButtonPresenter from "../../utils/like-button-presenter";
 import { createMovieDetailTemplate } from "../templates/template-creator";
 
 const Detail = {
   async render() {
     return `
       <div id="movie" class="movie"></div>
+      <div id="likeButtonContainer"></div>
     `;
   },
 
@@ -15,6 +18,18 @@ const Detail = {
     const movieContainer = document.getElementById("movie");
 
     movieContainer.innerHTML = createMovieDetailTemplate(movie);
+
+    LikeButtonPresenter.init({
+      likeButtonContainer: document.getElementById("likeButtonContainer"),
+      favoriteMovies: FavoriteMovieIdb,
+      movie: {
+        id: movie.id,
+        title: movie.title,
+        overview: movie.overview,
+        backdrop_path: movie.backdrop_path,
+        vote_average: movie.vote_average,
+      },
+    });
   },
 };
 

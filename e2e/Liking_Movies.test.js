@@ -1,5 +1,3 @@
-/* eslint-disable no-plusplus */
-/* eslint-disable no-undef */
 const assert = require("assert");
 
 Feature("Liking Movies");
